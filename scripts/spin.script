@@ -1,0 +1,28 @@
+go.property("torque_power", 1)
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	self.body = b2d.get_body("#collisionobject")
+	self.is_holding = false
+
+	-- 【核心教学点】：使用铰链关节 (Hinge Joint) 把方块钉住！
+	-- 参数：关节类型, 我的碰撞体, 关节起个名字, 我的中心锚点, 钉子的完整URL, 钉子的中心锚点
+	physics.create_joint(physics.JOINT_TYPE_HINGE, "#collisionobject", "center_pin", vmath.vector3(0,0,0), "/pin#collisionobject", vmath.vector3(0,0,0))
+end
+
+function update(self, dt)
+	-- 当按住鼠标时，像马达一样每帧持续施加扭矩
+	if self.is_holding then
+		b2d.body.apply_torque(self.body, self.torque_power)
+	end
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("touch") then
+		if action.pressed then
+			self.is_holding = true
+		elseif action.released then
+			self.is_holding = false
+		end
+	end
+end
